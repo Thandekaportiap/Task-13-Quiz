@@ -20,30 +20,49 @@ const questions = [
 
 let score = 0;
 let currentQuestion = 0;
-let totalTime = 100; 
-const questionTime = 10; 
+let totalTime = 100; // Total quiz time in seconds
+let questionTime = 10; // Time per question in seconds
+
+function displayTimers() {
+    console.clear(); // Clear the console for a cleaner output
+    console.log(`Total time left for the quiz: ${totalTime} seconds`);
+    console.log(`Time left for this question: ${questionTime} seconds`);
+    console.log(`Current Question: ${currentQuestion + 1}: ${questions[currentQuestion].question}`);
+    questions[currentQuestion].answers.forEach(answer => console.log(answer));
+}
 
 function askQuestion() {
     if (currentQuestion < questions.length) {
-        console.log(`\nQuestion ${currentQuestion + 1}: ${questions[currentQuestion].question}`);
-        questions[currentQuestion].answers.forEach(answer => console.log(answer));
+        displayTimers();
 
         let timer = setTimeout(() => {
             console.log("Time's up! Moving to the next question.");
             currentQuestion++;
+            questionTime = 10; // Reset question time for the next question
             askQuestion();
         }, questionTime * 1000);
 
+        const questionTimer = setInterval(() => {
+            if (questionTime > 0) {
+                questionTime--;
+                displayTimers(); // Update the timer display
+            } else {
+                clearInterval(questionTimer);
+            }
+        }, 1000);
+
         rl.question('Your answer: ', (answer) => {
             clearTimeout(timer);
+            clearInterval(questionTimer);
             const normalizedAnswer = answer.toLowerCase();
             if (normalizedAnswer === questions[currentQuestion].correct) {
                 score++;
                 console.log("Correct!");
-            } else if (normalizedAnswer.length > 0) { 
+            } else if (normalizedAnswer.length > 0) { // Only message for invalid input if not empty
                 console.log("Wrong answer.");
             }
             currentQuestion++;
+            questionTime = 10; // Reset question time for the next question
             askQuestion();
         });
     } else {
@@ -58,9 +77,9 @@ const overallTimer = setInterval(() => {
         if (totalTime <= 0) {
             console.log("Quiz time's up!");
         }
-        currentQuestion = questions.length; 
+        currentQuestion = questions.length; // Move to end the quiz
     } else {
-        totalTime--; 
+        totalTime--; // Decrement total time
     }
 }, 1000);
 
